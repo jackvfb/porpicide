@@ -1,0 +1,175 @@
+---
+title: "TMMC Porpicide 2007-present"
+format: html
+editor: visual
+echo: false
+---
+
+```{r}
+#| output: false
+
+library(readxl)
+library(readr)
+library(ggOceanMaps)
+library(ggspatial)
+library(RColorBrewer)
+library(tidyverse)
+
+#raw data files
+rawFiles <- list.files("data/raw", full.names = TRUE)
+#omit the unneeded spreadsheet in data/raw
+rawFiles <- rawFiles[-1]
+#sheets needed in each data file
+rawSheets <- c(1,1)
+#lookup table with probability of porpocide for every case
+lookup <- read_csv(file="data/derived/Porpicide_Lookup.csv", col_types = "cf")
+
+#vars wanted (note these vary nominally in each spreadsheet)
+varsWanted <- c("TMMC_ID","Age_Class","Sex","Strand_Date","Strand_County", "County", "Latitude", "Longitude")
+  
+getData <- function(raw, vars) {
+  result <- raw %>% 
+    select(any_of(vars)) %>% 
+    left_join(lookup, by = "TMMC_ID") %>%
+    mutate(year = year(Strand_Date))%>%
+    mutate(yearf = as.factor(year)) %>%
+    mutate(month = as.factor(month(Strand_Date))) %>%
+    mutate(Latitude = as.numeric(Latitude)) %>%
+    mutate(Longitude = as.numeric(Longitude)) %>%
+    mutate(`CONFIDENCE  OF PORPICIDE` =  fct_relevel(`CONFIDENCE  OF PORPICIDE`, c("CONFIRMED", "PROBABLE", "SUSPECT", "UNLIKELY"))) %>%
+    mutate(
+      agef = case_when(
+        Age_Class == "Adult" ~ "Adult",
+        Age_Class == "Subadult" ~ "Subadult",
+        Age_Class == "Juvenile" ~ "Juvenile",
+        Age_Class == "Calf" ~ "Calf",
+        .default = "Other"
+        )
+      ) %>%
+    mutate(agef = as.factor(agef))
+  names(result) <- c("id", "age", "sex", "date", "county", "lat", "lon", "prob", "year", "yearf", "month", "agef")
+  levels(result$month) <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  #replacing non-trauma cases (NA because not reviewed by B.C.) with UNLIKELY
+  result$prob <- replace_na(result$prob, "UNLIKELY")
+  result$sex <- as.factor(replace_na(result$sex, "Unknown"))
+  levels(result$agef) <- c("Adult", "Subadult", "Juvenile", "Calf", "Other")
+  return(result)
+}
+
+myData <- map2(rawFiles, rawSheets, function(x,y) read_excel(path=x, sheet=y))
+myData <- map(myData, function(x) getData(x, vars=varsWanted))
+myData <- list_rbind(myData)
+```
+
+## Introduction
+
+## Chronology by year
+
+```{r}
+#| label: fig-yearly-counts
+#| fig-cap: "Yearly count of the number of cases."
+myData %>%
+  ggplot(aes(x=yearf,fill=prob))+
+  geom_bar()+
+  xlab("Year")+
+  ylab("Count of cases")
+```
+
+```{r}
+#| label: fig-cumulative-counts
+#| fig-cap: "Cumulative count of the number of cases, by probability"
+
+myData %>%
+  group_by(year, prob) %>% 
+  tally() %>%
+  group_by(prob) %>% 
+  mutate(cum = cumsum(n)) %>% 
+  ggplot(aes(x=year, y = cum, color=prob))+
+  geom_line()+
+  ylab("cumulative number of cases")
+```
+
+Proportion of cases in each probability class
+
+```{r}
+countData <- myData %>%
+  count(year, prob)
+
+allYr <- rep(2007:2023, each=4)
+allProb <- rep(c("UNLIKELY", "SUSPECT", "PROBABLE", "CONFIRMED"), 17)
+nullData <- data.frame(year=allYr, prob=allProb, n=0)
+nullData <- anti_join(nullData, countData, by=c("year", "prob"))
+countData %>%
+  rbind(nullData) %>%
+  ggplot(aes(x=as.factor(year), y=n, fill=prob))+
+  geom_bar(stat="identity", position="fill")+
+  labs(y="Proportion of cases",x="Year")
+```
+
+## Seasonal cycles
+
+As can be seen in @fig-summary1 there is seasonal cycle in strandings, with most occurring in the summer months. The individual probabilities seems to also follow that seasonal pattern.
+
+```{r}
+#| label: fig-summary1
+#| fig-cap: "A summary plot of porpicide data"
+
+myData %>% 
+  ggplot(aes(x=month, fill=prob))+
+  geom_bar() +
+  theme(axis.text.x = element_text(angle=90))
+```
+
+```{r}
+#| label: fig-monthly-counts
+#| fig-cap: "Mean counts for each probability for each month of the year. Counts averaged over the 18 year period Jan 2007- Dec 2023"
+#| message: false
+reps <- length(unique(myData$year))
+allMon <- factor(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), reps), levels=c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
+allYr <- rep(2007:2023, each=12)
+nullData <- data.frame(month=allMon, year=allYr, n=0)
+nullData <- lapply(c("UNLIKELY", "SUSPECT", "PROBABLE", "CONFIRMED"), function(x) cbind(nullData, prob=rep(x, 12)))
+nullData <- list_rbind(nullData)
+nullData <- anti_join(nullData, myData, by=c("month","year","prob"))
+
+myData %>%
+  group_by(year, month) %>%
+  count(prob) %>%
+  full_join(nullData) %>%
+  group_by(month, prob) %>% 
+  summarize(meanCount=mean(n)) %>%
+  ggplot() +
+  geom_line(aes(x=month, y=meanCount, group=prob, color=prob))
+```
+
+## Spatial Data
+
+Now looking at a map of the cases we can see that more cases have been suspect in the San Francisco Bay over time. Confirmed cases seem pretty well distributed.
+
+```{r}
+#| label: fig-spatial-all
+#| fig-cap: "Spatial distribution of all cases, colored by year, faceted by probability."
+spat <- drop_na(myData, lat, lon)
+# maps <- spat %>%
+#   nest(data=-prob) %>%
+#   mutate(plot = map2(data, prob, function(x, y) qmap(x, color=year) + ggtitle(y))) %>%
+#   pull(plot, name = prob)
+
+pal = colorRampPalette(colors = c("red", "blue"))
+
+basemap(spat) +
+  geom_spatial_point(spat, mapping = aes(x=lon, y = lat, color=yearf), crs = 4326)+
+  scale_color_discrete(type = pal(19)) +
+  facet_wrap(~prob)
+```
+
+## Age demography of porpicides
+
+```{r}
+myData %>%
+  filter(sex != "Unknown") %>%
+  ggplot(aes(x=agef, fill=prob))+
+  geom_bar()+
+  facet_grid(prob~sex)+
+  xlab("Age Class")
+```
