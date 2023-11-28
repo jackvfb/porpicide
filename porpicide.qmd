@@ -68,6 +68,7 @@ myData <- list_rbind(myData)
 ```{r}
 #| label: fig-yearly-counts
 #| fig-cap: "Yearly count of the number of cases."
+
 myData %>%
   ggplot(aes(x=yearf,fill=prob))+
   geom_bar()+
@@ -104,6 +105,27 @@ countData %>%
   ggplot(aes(x=as.factor(year), y=n, fill=prob))+
   geom_bar(stat="identity", position="fill")+
   labs(y="Proportion of cases",x="Year")
+```
+
+```{r}
+#| label: fig-proportion-smooth
+#| fig-cap: "Incidence of high proability cases through time. There appears to be a peak in high likelihood cases in the 2015-2020 period"
+#| message: false
+#| 
+allData <- countData %>%
+  rbind(nullData)
+levels(allData$prob) <- c("HIGH", "HIGH", "LOW", "LOW")
+allData %>%
+  group_by(year, prob) %>% 
+  summarize(all=sum(n)) %>%
+  mutate(tot=sum(all)) %>% 
+  mutate(prop=all/tot) %>%
+  filter(prob=="HIGH") %>% 
+  ggplot()+
+  geom_smooth(aes(x=as.numeric(year),y=prop))+
+  geom_point(aes(x=as.numeric(year),y=prop))+
+  ylab("Proportion of cases classified as HIGH probability")+
+  xlab("Year")
 ```
 
 ## Seasonal cycles
