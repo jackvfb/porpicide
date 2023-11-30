@@ -1,10 +1,19 @@
 ---
-title: "TMMC Porpicide 2007-present"
-format: html
-editor: visual
+fontsize: 11pt
+interlinespace: 2
+format:
+  html: default
+  pdf: default
+bibliography: references.bib
 echo: false
 ---
 
+## Bottlenose dolphins (*Tursiops truncatus*) kill harbor porpoises (*Phocoena phocoena*) in California.
+
+William Keener
+Marc Webber
+Padraig Duignan
+Jackson Vanfleet-Brown
 ```{r}
 #| output: false
 
@@ -23,7 +32,6 @@ rawFiles <- rawFiles[-1]
 rawSheets <- c(1,1)
 #lookup table with probability of porpocide for every case
 lookup <- read_csv(file="data/derived/Porpicide_Lookup.csv", col_types = "cf")
-
 #vars wanted (note these vary nominally in each spreadsheet)
 varsWanted <- c("TMMC_ID","Age_Class","Sex","Strand_Date","Strand_County", "County", "Latitude", "Longitude")
   
@@ -63,7 +71,39 @@ myData <- list_rbind(myData)
 
 ## Introduction
 
-## Chronology by year
+* Harbor porpoise population conservation in Central California
+
+Harbor porpoise (*Phocoena phocoeana*) populations in California have grown at rates of approximately 6-10% in the period since bycatch (2004), according to long term aerial surveys [@forney2021]. Despite this growth, interannual variability in harbor porpoise strandings has caused concerns about new and emerging threats to these populations.
+
+* UME in 2009-2010 blunt force trauma
+
+  Wilkin et al. [-@wilkin2012] reported on an elevated period of strandings, occurring between 2007-2009, that triggered the National Marine Fisheries Service to declare a harbor porpoise "unusual mortality event" (UME). They observed that death by blunt force trauma increased significantly from August to October in both 2008 and 2009 and considered interspecific aggression from bottlenose dolphins (*Tursiops truncatus*) to be the most likely cause of trauma in these cases.
+
+* Bottlenose dolphins - northward range expansion
+
+  Attacks by bottlenose dolphins on harbor porpoises were first documented in California (and the entire Pacific Ocean) by Cotter et al. [-@cotter_porpicide_2012]. It has also occurred in other regions worldwide revealing through an intensive observational study a connection between pathological evidence and observational study. However, bottlenose dolphins and harbor porpoises were not expected to have significant habitat range overlap for this to pose a significant threat, but in light of recent evidencve of a northward range expansion of bottlenose dolphins, however there is concern developing for a new and identified source of porpoise threats.
+
+* Need to continue monitoring causes and incidence of porpoise deaths to understand drivers of interspecific aggression and threats to porpoise conservation.
+
+  In this study we reviewed necropsies of harbor porpoises in the Central California Stranding network from the time of the UME reported by Wilkin et al. [-@wilkin2012] through to the present. The objective was to review the pathology reports to estimate the likelihood of fatality by bottlenose dolphins in each case, to investigate what proportion of fatalities could be driving this increase.
+
+## Methods
+
+* Stranding network
+  - range of search area and protocol for reporting and collecting carcasses
+* Pathology
+  - process for necropsy and assessing TME data
+  - process for estimating probability
+    - Confirmed Case: Tt rakes + Fractures + Hemorrhage +/- Capture Myopathy
+    - Probable Case: Fractures + Hemorrhage +/- Capture Myopathy
+    - Suspect Case: Hemorrhage +/- Capture Myopathy
+    - Unlikely Case: Sudden death without blunt or sharp force trauma.
+
+## Results
+
+### Interannual view
+
+As seen in @fig-yearly-counts, the interannual range in strandings is 8 cases (2010) to 33 cases (2008), showing a strong increase coincident with the UME declaration, as well as a minimum in 2010 following the lifting of the UME. The proportion of high-likelihood cases seems to increase during the period from 2007 until peaking around 2018, which is depicted more visibly in @fig-prop-counts. In this we can see that high likelihood cases peak at about 40% of cases before waning again between peak and present.
 
 ```{r}
 #| label: fig-yearly-counts
@@ -77,22 +117,8 @@ myData %>%
 ```
 
 ```{r}
-#| label: fig-cumulative-counts
-#| fig-cap: "Cumulative count of the number of cases, by probability"
-
-myData %>%
-  group_by(year, prob) %>% 
-  tally() %>%
-  group_by(prob) %>% 
-  mutate(cum = cumsum(n)) %>% 
-  ggplot(aes(x=year, y = cum, color=prob))+
-  geom_line()+
-  ylab("cumulative number of cases")
-```
-
-Proportion of cases in each probability class
-
-```{r}
+#| label: fig-prop-counts
+#| fig-cap: "Proportion of the number of cases each year, by probability"
 countData <- myData %>%
   count(year, prob)
 
@@ -195,3 +221,9 @@ myData %>%
   facet_grid(prob~sex)+
   xlab("Age Class")
 ```
+
+
+## References
+
+:::{#refs}
+:::
