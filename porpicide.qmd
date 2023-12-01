@@ -1,19 +1,14 @@
 ---
-fontsize: 11pt
-interlinespace: 2
-format:
-  html: default
-  pdf: default
+format: html
 bibliography: references.bib
 echo: false
 ---
 
-## Bottlenose dolphins (*Tursiops truncatus*) kill harbor porpoises (*Phocoena phocoena*) in California.
+## Bottlenose dolphins (*Tursiops truncatus*) kill harbor porpoises (*Phocoena phocoena*): evidence from the central California stranding record, 2007-2023.
 
-William Keener
-Marc Webber
-Padraig Duignan
-Jackson Vanfleet-Brown
+Authors: William Keener, Marc Webber, Padraig Duignan, Jackson Vanfleet-Brown
+
+
 ```{r}
 #| output: false
 
@@ -67,58 +62,64 @@ getData <- function(raw, vars) {
 myData <- map2(rawFiles, rawSheets, function(x,y) read_excel(path=x, sheet=y))
 myData <- map(myData, function(x) getData(x, vars=varsWanted))
 myData <- list_rbind(myData)
+
+#define palette for plots
+myPal <- brewer.pal(n=length(unique(myData$prob)), "YlOrRd")
+names(myPal) <- rev(levels(myData$prob))
 ```
 
 ## Introduction
 
-* Harbor porpoise population conservation in Central California
+Harbor porpoise (*Phocoena phocoeana*) populations in California have grown at rates of approximately 6-10% since 2004, the post-gillnet bycatch period [@forney2021]. Despite this growth, there exist concern about emerging threats. One such concern is attack by bottlenose dolphins (*Tursiops truncatus*). 
 
-Harbor porpoise (*Phocoena phocoeana*) populations in California have grown at rates of approximately 6-10% in the period since bycatch (2004), according to long term aerial surveys [@forney2021]. Despite this growth, interannual variability in harbor porpoise strandings has caused concerns about new and emerging threats to these populations.
+A recognized phenomenon worldwide [e.g. @gross_indication_2020], instances of interspecific aggression were first noted in California at the time of the "unusual mortality event" (UME) of 2007-2009. Wilkin et al. [-@wilkin2012] examined stranded carcasses of harbor porpoises collected during this period and identified blunt force trauma as the most common known cause of death. Injuries in these cases suggested attack by bottlenose dolphins. Cotter et al. [-@cotter_porpicide_2012] observed attacks in Monterey Bay during this same period, providing further evidence of porpicide. Both authors indicated that these types of attacks peaked in the late summer and fall.
 
-* UME in 2009-2010 blunt force trauma
-
-  Wilkin et al. [-@wilkin2012] reported on an elevated period of strandings, occurring between 2007-2009, that triggered the National Marine Fisheries Service to declare a harbor porpoise "unusual mortality event" (UME). They observed that death by blunt force trauma increased significantly from August to October in both 2008 and 2009 and considered interspecific aggression from bottlenose dolphins (*Tursiops truncatus*) to be the most likely cause of trauma in these cases.
-
-* Bottlenose dolphins - northward range expansion
-
-  Attacks by bottlenose dolphins on harbor porpoises were first documented in California (and the entire Pacific Ocean) by Cotter et al. [-@cotter_porpicide_2012]. It has also occurred in other regions worldwide revealing through an intensive observational study a connection between pathological evidence and observational study. However, bottlenose dolphins and harbor porpoises were not expected to have significant habitat range overlap for this to pose a significant threat, but in light of recent evidencve of a northward range expansion of bottlenose dolphins, however there is concern developing for a new and identified source of porpoise threats.
-
-* Need to continue monitoring causes and incidence of porpoise deaths to understand drivers of interspecific aggression and threats to porpoise conservation.
-
-  In this study we reviewed necropsies of harbor porpoises in the Central California Stranding network from the time of the UME reported by Wilkin et al. [-@wilkin2012] through to the present. The objective was to review the pathology reports to estimate the likelihood of fatality by bottlenose dolphins in each case, to investigate what proportion of fatalities could be driving this increase.
+In this study we reviewed the harbor porpoise stranding record in central California from the time of the UME reported by Wilkin et al. [-@wilkin2012] to the present, estimating the probability of porpicide (i.e. attack by bottlenose dolphin) in each case.
 
 ## Methods
 
-* Stranding network
-  - range of search area and protocol for reporting and collecting carcasses
-* Pathology
-  - process for necropsy and assessing TME data
-  - process for estimating probability
-    - Confirmed Case: Tt rakes + Fractures + Hemorrhage +/- Capture Myopathy
-    - Probable Case: Fractures + Hemorrhage +/- Capture Myopathy
-    - Suspect Case: Hemorrhage +/- Capture Myopathy
-    - Unlikely Case: Sudden death without blunt or sharp force trauma.
+-   Stranding network
+    -   range of search area and protocol for reporting and collecting carcasses
+-   Pathology
+    -   process for necropsy and assessing TME data
+    -   process for estimating probability
+        -   Confirmed Case: Tt rakes + Fractures + Hemorrhage +/- Capture Myopathy
+        -   Probable Case: Fractures + Hemorrhage +/- Capture Myopathy
+        -   Suspect Case: Hemorrhage +/- Capture Myopathy
+        -   Unlikely Case: Sudden death without blunt or sharp force trauma.
 
-## Results
+## Results & Discussion
 
-### Interannual view
+### Interannual variability
 
-As seen in @fig-yearly-counts, the interannual range in strandings is 8 cases (2010) to 33 cases (2008), showing a strong increase coincident with the UME declaration, as well as a minimum in 2010 following the lifting of the UME. The proportion of high-likelihood cases seems to increase during the period from 2007 until peaking around 2018, which is depicted more visibly in @fig-prop-counts. In this we can see that high likelihood cases peak at about 40% of cases before waning again between peak and present.
+```{r}
+#| output: false
+myData %>%
+  group_by(year) %>%
+  count()
+
+```
+
+The number of cases each year depends on mortality and to a large extent on other factors, such as the probability that carcasses will float to shore and that they will be found. This causes variability year to year in the data set. There is a significant increase in cases coincident with the beginning of the UME in 2008 [@wilkin2012]. This is all shown in @fig-yearly-counts.
 
 ```{r}
 #| label: fig-yearly-counts
-#| fig-cap: "Yearly count of the number of cases."
+#| fig-cap: "Yearly counts are variable due to a combination of influences."
 
 myData %>%
-  ggplot(aes(x=yearf,fill=prob))+
+  ggplot(aes(x=yearf))+
   geom_bar()+
   xlab("Year")+
-  ylab("Count of cases")
+  ylab("Count of cases")+
+  theme(axis.text.x=element_text(angle=90))
+  # scale_fill_manual(values=myPal)
 ```
 
+Normalizing for interannual variability, we see that evidence of porpicide was most prevalent among strandings in 2015-2020. This trend appears to have reversed over the past 3 years as depicted in @fig-prop-porp.
+
 ```{r}
-#| label: fig-prop-counts
-#| fig-cap: "Proportion of the number of cases each year, by probability"
+#| label: fig-prop-porp
+#| fig-cap: "Incidence of porpicide appears to increase, then plateau 2015-2020, before decreasing again in recent years."
 countData <- myData %>%
   count(year, prob)
 
@@ -130,100 +131,102 @@ countData %>%
   rbind(nullData) %>%
   ggplot(aes(x=as.factor(year), y=n, fill=prob))+
   geom_bar(stat="identity", position="fill")+
-  labs(y="Proportion of cases",x="Year")
-```
-
-```{r}
-#| label: fig-proportion-smooth
-#| fig-cap: "Incidence of high proability cases through time. There appears to be a peak in high likelihood cases in the 2015-2020 period"
-#| message: false
-#| 
-allData <- countData %>%
-  rbind(nullData)
-levels(allData$prob) <- c("HIGH", "HIGH", "LOW", "LOW")
-allData %>%
-  group_by(year, prob) %>% 
-  summarize(all=sum(n)) %>%
-  mutate(tot=sum(all)) %>% 
-  mutate(prop=all/tot) %>%
-  filter(prob=="HIGH") %>% 
-  ggplot()+
-  geom_smooth(aes(x=as.numeric(year),y=prop))+
-  geom_point(aes(x=as.numeric(year),y=prop))+
-  ylab("Proportion of cases classified as HIGH probability")+
-  xlab("Year")
-```
-
-## Seasonal cycles
-
-As can be seen in @fig-summary1 there is seasonal cycle in strandings, with most occurring in the summer months. The individual probabilities seems to also follow that seasonal pattern.
-
-```{r}
-#| label: fig-summary1
-#| fig-cap: "A summary plot of porpicide data"
-
-myData %>% 
-  ggplot(aes(x=month, fill=prob))+
-  geom_bar() +
+  labs(y="Proportion of cases",x="Year", fill="Estimated probability")+
+  scale_fill_manual(values=myPal)+
   theme(axis.text.x = element_text(angle=90))
 ```
 
+### Seasonal variability
+
+As seen in @fig-monthly-counts there is seasonal cycle in strandings. Most occur in the summer. This is consistent with Wilkin et al. [-@wilkin2012] who observed the same patterns in stranding data from 1998-2010.
+
 ```{r}
 #| label: fig-monthly-counts
-#| fig-cap: "Mean counts for each probability for each month of the year. Counts averaged over the 18 year period Jan 2007- Dec 2023"
+#| fig-cap: "Cumulative number of strandings, by month, for the period 2007-2023. Shows most strandings occur during the Summer."
+
+myData %>%
+  ggplot(aes(x=month))+
+  geom_bar() +
+  labs(y="Total cases", x="Month", fill="Estimated probability")
+```
+
+Porpicide cases appear to peak later in the year, in the late-summer to fall. @fig-monthly-probs shows that this peak occurs July-October.  *Note: as a next step in this analysis, we could test for a statistically significant difference between the distribution of high-probability and low-probability porpicide cases.*
+
+```{r}
+#| label: fig-monthly-probs
+#| fig-cap: "Proportion of strandings in each probability class, by month. These proportions are derived from the 18 year period Jan 2007- Dec 2023"
 #| message: false
-reps <- length(unique(myData$year))
-allMon <- factor(rep(c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), reps), levels=c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
-allYr <- rep(2007:2023, each=12)
-nullData <- data.frame(month=allMon, year=allYr, n=0)
-nullData <- lapply(c("UNLIKELY", "SUSPECT", "PROBABLE", "CONFIRMED"), function(x) cbind(nullData, prob=rep(x, 12)))
-nullData <- list_rbind(nullData)
-nullData <- anti_join(nullData, myData, by=c("month","year","prob"))
 
 myData %>%
   group_by(year, month) %>%
-  count(prob) %>%
-  full_join(nullData) %>%
-  group_by(month, prob) %>% 
-  summarize(meanCount=mean(n)) %>%
+  count(prob) %>% 
   ggplot() +
-  geom_line(aes(x=month, y=meanCount, group=prob, color=prob))
+  geom_bar(aes(x=month, fill=prob), position="fill")+
+  scale_fill_manual(values=myPal) +
+  labs(x="Month",y="Proportion of cases", fill="Estimated probability")
+
 ```
 
-## Spatial Data
-
-Now looking at a map of the cases we can see that more cases have been suspect in the San Francisco Bay over time. Confirmed cases seem pretty well distributed.
+### Spatial extent
 
 ```{r}
-#| label: fig-spatial-all
-#| fig-cap: "Spatial distribution of all cases, colored by year, faceted by probability."
-spat <- drop_na(myData, lat, lon)
-# maps <- spat %>%
-#   nest(data=-prob) %>%
-#   mutate(plot = map2(data, prob, function(x, y) qmap(x, color=year) + ggtitle(y))) %>%
-#   pull(plot, name = prob)
+#| output: false
 
+#make maps
 pal = colorRampPalette(colors = c("red", "blue"))
+spat <- drop_na(myData, lat, lon)
+maps <- spat %>%
+  nest(data=-prob) %>%
+  mutate(plot = map2(data, prob, function(x, y) basemap(x) + geom_spatial_point(x, mapping = aes(x=lon, y = lat, color=yearf), crs = 4326) + scale_color_discrete(type = pal(19)) + labs(color="Year") + ggtitle(y))) %>%
+  pull(plot, name = prob)
 
-basemap(spat) +
-  geom_spatial_point(spat, mapping = aes(x=lon, y = lat, color=yearf), crs = 4326)+
-  scale_color_discrete(type = pal(19)) +
+# basemap(spat) +
+#   geom_spatial_point(spat, mapping = aes(x=lon, y = lat, color=yearf), crs = 4326)+
+#   scale_color_discrete(type = pal(19)) +
+#   facet_wrap(~prob)
+```
+The northward range expansion of bottlenose dolphins could drive a higher incidence of porpicide in northern regions through time. An initial look at the spatial data [@fig-spat-conf] does not reveal any obvious northward progression in confirmed porpicide cases.
+
+```{r}
+#| label: fig-spat-conf
+#| fig-cap: "Spatial extent of confirmed porpicide cases does not show any chronological trends, such as a northward progression which may have been the effect of range expansion documented in California bottlenose dolphins."
+
+maps$CONFIRMED
+```
+
+If confirmed cases are compared to unconfirmed cases, a weak northward trend may appear. The maximum latitude of all confirmed cases in a given year appears to increase through time, particularly if to all unlikely cases.
+
+```{r}
+#| label: fig-maxlat
+#| fig-cap: "The maximum latitude of strandings exhibits a weak northwards trend for high-likelihood porpicide cases, especially when compared to low-likelihood cases."
+#| message: false
+#| warning: false
+myData %>%
+  # mutate(prob2=fct_other(prob, keep="UNLIKELY", other_level = "LIKELY")) %>%
+  filter(prob=="CONFIRMED"|prob=="UNLIKELY") %>% 
+  group_by(year, prob) %>%
+  summarize(maxlat=max(lat)) %>%
+  ggplot()+
+  geom_point(aes(x=year, y=maxlat))+
+  labs(y="Maximum Latitude", x="Year")+
   facet_wrap(~prob)
 ```
 
-## Age demography of porpicides
+### Age/sex of porpicides
 
 ```{r}
+#| label: fig-demography
+#| fig-cap: "Adult females and juvenile males appear to be the most frequent targets among confirmed cases of porpicide."
 myData %>%
   filter(sex != "Unknown") %>%
   ggplot(aes(x=agef, fill=prob))+
   geom_bar()+
   facet_grid(prob~sex)+
-  xlab("Age Class")
+  xlab("Age Class") +
+  scale_fill_manual(values=myPal)
 ```
-
 
 ## References
 
-:::{#refs}
+::: {#refs}
 :::
