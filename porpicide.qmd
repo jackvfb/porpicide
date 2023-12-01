@@ -70,7 +70,7 @@ names(myPal) <- rev(levels(myData$prob))
 
 ## Introduction
 
-Harbor porpoise (*Phocoena phocoeana*) populations in California have grown at rates of approximately 6-10% since 2004, the post-gillnet bycatch period [@forney2021]. Despite this growth, there exist concern about emerging threats. One such concern is attack by bottlenose dolphins (*Tursiops truncatus*). 
+Harbor porpoise (*Phocoena phocoeana*) populations in California have grown at rates of approximately 6-10% since 2004, the post-gillnet bycatch period [@forney2021]. Despite this growth, there exist concerns about emerging threats. One such concern is attack by bottlenose dolphins (*Tursiops truncatus*). 
 
 A recognized phenomenon worldwide [e.g. @gross_indication_2020], instances of interspecific aggression were first noted in California at the time of the "unusual mortality event" (UME) of 2007-2009. Wilkin et al. [-@wilkin2012] examined stranded carcasses of harbor porpoises collected during this period and identified blunt force trauma as the most common known cause of death. Injuries in these cases suggested attack by bottlenose dolphins. Cotter et al. [-@cotter_porpicide_2012] observed attacks in Monterey Bay during this same period, providing further evidence of porpicide. Both authors indicated that these types of attacks peaked in the late summer and fall.
 
@@ -150,7 +150,7 @@ myData %>%
   labs(y="Total cases", x="Month", fill="Estimated probability")
 ```
 
-Porpicide cases appear to peak later in the year, in the late-summer to fall. @fig-monthly-probs shows that this peak occurs July-October.  *Note: as a next step in this analysis, we could test for a statistically significant difference between the distribution of high-probability and low-probability porpicide cases.*
+Porpicide cases appear to peak later in the year, in the late-summer to fall. @fig-monthly-probs shows that, normalizing for monthly variability, porpicide cases form the greatest proportion of strandings in July-October.
 
 ```{r}
 #| label: fig-monthly-probs
@@ -194,7 +194,7 @@ The northward range expansion of bottlenose dolphins could drive a higher incide
 maps$CONFIRMED
 ```
 
-If confirmed cases are compared to unconfirmed cases, a weak northward trend may appear. The maximum latitude of all confirmed cases in a given year appears to increase through time, particularly if to all unlikely cases.
+If confirmed cases are compared to unconfirmed cases, a weak northward trend may appear. The maximum latitude of all confirmed cases in a given year appears to increase through time, particularly if compared to all unlikely cases.
 
 ```{r}
 #| label: fig-maxlat
