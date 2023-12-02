@@ -1,0 +1,141 @@
+---
+title: "Porpicide in California"
+subtitle: "Looking for evidence of interspecific aggression in the stranding record of harbor porpoise (*Phocoena phocoena*), 2007-2023"
+author: "Jackson Vanfleet-Brown"
+date: 12-13-2023
+format: revealjs
+echo: false
+---
+
+```{r}
+#| output: false
+
+library(readr)
+library(ggOceanMaps)
+library(ggspatial)
+library(RColorBrewer)
+library(tidyverse)
+
+source("../code/getData.R")
+source("../code/allData.R")
+
+rawFiles <- list.files("../data/raw", full.names = TRUE) #raw data files
+rawFiles <- rawFiles[-1] #omit the unneeded spreadsheet in data/raw
+rawSheets <- c(1,1) #sheets needed in each data file
+varsWanted <- c("TMMC_ID","Age_Class","Sex","Strand_Date","Strand_County", "County", "Latitude", "Longitude") #vars wanted
+lookup <- read_csv(file="../data/derived/Porpicide_Lookup.csv", col_types = "cf") #lookup table
+
+myData <- allData(rawFiles, rawSheets, varsWanted, lookup)
+
+#define palette for plots
+myPal <- brewer.pal(n=length(unique(myData$prob)), "YlOrRd")
+names(myPal) <- rev(levels(myData$prob))
+```
+
+## Are these attacks a serious threat?
+
+![Different types of bottlenose dolphin behavior that is lethal to harbor porpoises. From Cotter et al. (2012)](images/cotter2012_attack.png)
+
+##
+
+![Rake marks on a stranded harbor porpoise carcass, from Cotter et al. 2012](images/cotter2012_rakemarks.png)
+
+## Objectives {.smaller}
+
+* Use the stranding record of harbor porpoises in central California to determine magnitude and extent of porpicide.
+* Continue building on analysis done for the period 1998-2010.
+
+![](images/wilkin2012_trauma.png){fig-align="center"}
+
+## Methods
+
+Reviewed pathology reports and classified likelihood of porpicide based on the following key:
+
+- **Confirmed Case:** Tt rakes + Fractures + Hemorrhage +/- Capture Myopathy
+- **Probable Case:** Fractures + Hemorrhage +/- Capture Myopathy
+- **Suspect Case:** Hemorrhage +/- Capture Myopathy
+- **Unlikely Case:** Sudden death without blunt or sharp force trauma.
+
+# Results
+
+## Interannual variability
+
+```{r}
+myData %>%
+  ggplot(aes(x=yearf))+
+  geom_bar()+
+  xlab("Year")+
+  ylab("Count of cases")+
+  theme(axis.text.x=element_text(angle=90))
+```
+
+## Interannual trends
+
+```{r}
+countData <- myData %>%
+  count(year, prob)
+
+allYr <- rep(2007:2023, each=4)
+allProb <- rep(c("UNLIKELY", "SUSPECT", "PROBABLE", "CONFIRMED"), 17)
+nullData <- data.frame(year=allYr, prob=allProb, n=0)
+nullData <- anti_join(nullData, countData, by=c("year", "prob"))
+countData %>%
+  rbind(nullData) %>%
+  ggplot(aes(x=as.factor(year), y=n, fill=prob))+
+  geom_bar(stat="identity", position="fill")+
+  labs(y="Proportion of cases",x="Year", fill="Estimated probability")+
+  scale_fill_manual(values=myPal)+
+  theme(axis.text.x = element_text(angle=90))
+```
+
+## Seasonal variability
+
+```{r}
+myData %>%
+  ggplot(aes(x=month))+
+  geom_bar() +
+  labs(y="Total cases", x="Month", fill="Estimated probability")
+```
+
+## Seasonal trends
+
+```{r}
+myData %>%
+  group_by(year, month) %>%
+  count(prob) %>% 
+  ggplot() +
+  geom_bar(aes(x=month, fill=prob), position="fill")+
+  scale_fill_manual(values=myPal) +
+  labs(x="Month",y="Proportion of cases", fill="Estimated probability")
+```
+
+## Discussion
+
+- Evidence of porpicide was most prevalent among strandings in 2015-2020. This trend appears to have reversed over the past 3 years.
+- Porpicide cases form the greatest proportion of strandings in July-October.
+- **Future analysis**: Are these trends correlated with observations of bottlenose dolphins?
+
+##
+
+:::: {.columns}
+
+:::{.column}
+### Acknowledgements
+
+*The Marine Mammal Center*
+
+- Julia O'Hern
+- Bekah Lane
+- Bill Keener
+- Padraig Duignan
+
+*SFSU*
+
+- Ellen Hines
+:::
+
+::: {.column}
+![](images/boatride.jpg)
+:::
+
+::::

@@ -1,5 +1,5 @@
 ---
-format: html
+format: docx
 bibliography: references.bib
 echo: false
 ---
@@ -12,56 +12,22 @@ Authors: William Keener, Marc Webber, Padraig Duignan, Jackson Vanfleet-Brown
 ```{r}
 #| output: false
 
-library(readxl)
 library(readr)
 library(ggOceanMaps)
 library(ggspatial)
 library(RColorBrewer)
 library(tidyverse)
 
-#raw data files
-rawFiles <- list.files("data/raw", full.names = TRUE)
-#omit the unneeded spreadsheet in data/raw
-rawFiles <- rawFiles[-1]
-#sheets needed in each data file
-rawSheets <- c(1,1)
-#lookup table with probability of porpocide for every case
-lookup <- read_csv(file="data/derived/Porpicide_Lookup.csv", col_types = "cf")
-#vars wanted (note these vary nominally in each spreadsheet)
-varsWanted <- c("TMMC_ID","Age_Class","Sex","Strand_Date","Strand_County", "County", "Latitude", "Longitude")
-  
-getData <- function(raw, vars) {
-  result <- raw %>% 
-    select(any_of(vars)) %>% 
-    left_join(lookup, by = "TMMC_ID") %>%
-    mutate(year = year(Strand_Date))%>%
-    mutate(yearf = as.factor(year)) %>%
-    mutate(month = as.factor(month(Strand_Date))) %>%
-    mutate(Latitude = as.numeric(Latitude)) %>%
-    mutate(Longitude = as.numeric(Longitude)) %>%
-    mutate(`CONFIDENCE  OF PORPICIDE` =  fct_relevel(`CONFIDENCE  OF PORPICIDE`, c("CONFIRMED", "PROBABLE", "SUSPECT", "UNLIKELY"))) %>%
-    mutate(
-      agef = case_when(
-        Age_Class == "Adult" ~ "Adult",
-        Age_Class == "Subadult" ~ "Subadult",
-        Age_Class == "Juvenile" ~ "Juvenile",
-        Age_Class == "Calf" ~ "Calf",
-        .default = "Other"
-        )
-      ) %>%
-    mutate(agef = as.factor(agef))
-  names(result) <- c("id", "age", "sex", "date", "county", "lat", "lon", "prob", "year", "yearf", "month", "agef")
-  levels(result$month) <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-  #replacing non-trauma cases (NA because not reviewed by B.C.) with UNLIKELY
-  result$prob <- replace_na(result$prob, "UNLIKELY")
-  result$sex <- as.factor(replace_na(result$sex, "Unknown"))
-  levels(result$agef) <- c("Adult", "Subadult", "Juvenile", "Calf", "Other")
-  return(result)
-}
+source("code/getData.R")
+source("code/allData.R")
 
-myData <- map2(rawFiles, rawSheets, function(x,y) read_excel(path=x, sheet=y))
-myData <- map(myData, function(x) getData(x, vars=varsWanted))
-myData <- list_rbind(myData)
+rawFiles <- list.files("data/raw", full.names = TRUE) #raw data files
+rawFiles <- rawFiles[-1] #omit the unneeded spreadsheet in data/raw
+rawSheets <- c(1,1) #sheets needed in each data file
+varsWanted <- c("TMMC_ID","Age_Class","Sex","Strand_Date","Strand_County", "County", "Latitude", "Longitude") #vars wanted
+lookup <- read_csv(file="data/derived/Porpicide_Lookup.csv", col_types = "cf") #lookup table
+
+myData <- allData(rawFiles, rawSheets, varsWanted, lookup)
 
 #define palette for plots
 myPal <- brewer.pal(n=length(unique(myData$prob)), "YlOrRd")
@@ -185,7 +151,7 @@ maps <- spat %>%
 #   scale_color_discrete(type = pal(19)) +
 #   facet_wrap(~prob)
 ```
-The northward range expansion of bottlenose dolphins could drive a higher incidence of porpicide in northern regions through time. An initial look at the spatial data [@fig-spat-conf] does not reveal any obvious northward progression in confirmed porpicide cases.
+The northward range expansion of bottlenose dolphins could drive a higher incidence of porpicide in northern regions through time. An initial look at the spatial data (@fig-spat-conf) does not reveal any obvious northward progression in confirmed porpicide cases.
 
 ```{r}
 #| label: fig-spat-conf
@@ -194,7 +160,7 @@ The northward range expansion of bottlenose dolphins could drive a higher incide
 maps$CONFIRMED
 ```
 
-If confirmed cases are compared to unconfirmed cases, a weak northward trend may appear. The maximum latitude of all confirmed cases in a given year appears to increase through time, particularly if compared to all unlikely cases.
+If confirmed cases are compared to unconfirmed cases, a weak northward trend may appear, as shown in @fig-maxlat. The maximum latitude of all confirmed cases in a given year appears to increase through time, particularly if compared to all unlikely cases.
 
 ```{r}
 #| label: fig-maxlat
