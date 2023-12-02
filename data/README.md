@@ -18,7 +18,7 @@
     + Suspect Case: Hemorrhage +/- Capture Myopathy
     + Unlikely Case: Sudden death without blunt or sharp force trauma.
 
-## `/derived`
+## `derived/`
 
 * `'Porpicide_Lookup.csv'`
 
