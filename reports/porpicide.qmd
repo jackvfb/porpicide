@@ -1,5 +1,5 @@
 ---
-format: docx
+format: html
 bibliography: references.bib
 echo: false
 ---
