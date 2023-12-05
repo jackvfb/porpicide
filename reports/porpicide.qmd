@@ -18,14 +18,14 @@ library(ggspatial)
 library(RColorBrewer)
 library(tidyverse)
 
-source("code/getData.R")
-source("code/allData.R")
+source("../code/getData.R")
+source("../code/allData.R")
 
-rawFiles <- list.files("data/raw", full.names = TRUE) #raw data files
+rawFiles <- list.files("../data/raw", full.names = TRUE) #raw data files
 rawFiles <- rawFiles[-1] #omit the unneeded spreadsheet in data/raw
 rawSheets <- c(1,1) #sheets needed in each data file
 varsWanted <- c("TMMC_ID","Age_Class","Sex","Strand_Date","Strand_County", "County", "Latitude", "Longitude") #vars wanted
-lookup <- read_csv(file="data/derived/Porpicide_Lookup.csv", col_types = "cf") #lookup table
+lookup <- read_csv(file="../data/derived/Porpicide_Lookup.csv", col_types = "cf") #lookup table
 
 myData <- allData(rawFiles, rawSheets, varsWanted, lookup)
 

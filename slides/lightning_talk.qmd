@@ -3,7 +3,7 @@ title: "Porpicide in California"
 subtitle: "Looking for evidence of interspecific aggression in the stranding record of harbor porpoise (*Phocoena phocoena*), 2007-2023"
 author: "Jackson Vanfleet-Brown"
 date: 12-13-2023
-format: revealjs
+format: pptx
 echo: false
 ---
 
